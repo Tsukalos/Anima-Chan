@@ -130,7 +130,7 @@ async def update_list():
 			save_agenda()
 		await asyncio.sleep(60*60) # task runs every 60 min	
 		
-@bot.event 
+@bot.event
 async def on_ready():
 	global agendalist
 	if not os.stat(AGENDA).st_size == 0:
