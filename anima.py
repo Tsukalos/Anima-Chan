@@ -23,37 +23,53 @@ from urllib.parse import urlparse
 logging.basicConfig(level=logging.INFO)
 
 AGENDA = "agenda.json"
+AUTH = "auth.json"
 
 #creates file if doesn't exist
 if not os.path.isfile(AGENDA):
 	f = open(AGENDA,"x")
 	f.close()
+if not os.path.isfile(AUTH):
+	f = open(AUTH,"x")
+	f.close()
+
 	
-#Discord TKN here
-discord_tkn = 'MjE0NTY1Mzc3NzgxMzk5NTUz.CpK1GQ.mUYCXTPrwegPPoytQq7pR5yjnuw'
-	
-	
-#Anilist user credentials here
-client_id = 'tsukalos-atojm'
-client_secret = '3mc1o2QdJstxKnWvg7aCyZbDR'
-	
+## tokens needed to be inputed in auth.json file
+discord_tkn = ''
+client_id = ''
+client_secret = ''
+
+## used after anilist auth
+token = ''
+
 description = 'AnimeAirTime'
 
-#header data for anilist auth
-auth_data = {'grant_type': 'client_credentials', 'client_id' : client_id , 'client_secret' : client_secret }
 
 CMDPREFIX = '!!'
 
 bot = commands.Bot(command_prefix=CMDPREFIX, description=description)
 
+def get_credentials_from_file():
+	global discord_tkn
+	global client_id
+	global client_secret
+	f = open(AUTH,"r")
+	c = json.load(f)
+	discord_tkn = str(c['discord_token'])
+	client_id = str(c['anilist_client_id'])
+	client_secret = str(c['anilist_client_secret'])
+	
+get_credentials_from_file()
 
+#header data for anilist auth
+auth_data = {'grant_type': 'client_credentials', 'client_id' : client_id , 'client_secret' : client_secret }
+	
 def alist_tkn():
 	''' Auth Anilist API - returns access_token str '''
 	client_auth = requests.post('https://anilist.co/api/auth/access_token',data=auth_data)
 	json_res = json.loads(bytes.decode(client_auth.content))
 	return json_res['access_token']
 
-token = alist_tkn()
 
 agendalist = []
 
@@ -106,9 +122,8 @@ async def agendaloop():
 			for x in agendalist:
 				if int(time.time()) > (x.airtime-(60*10)) and int(time.time()) < x.airtime:
 					await bot.send_message(channel, "Anime "+str(x.name)+" around "+str(datetime.fromtimestamp(x.airtime)))
-					#agendalist.remove(x)
-					#bot.send_message(channel, "")
 					
+				
 
 		
 
@@ -132,12 +147,15 @@ async def update_list():
 					else:
 						if a == "finished":
 							logging.info(x.name+" has finished airing!")
+							agendalist.remove(x)
 			save_agenda()
 		await asyncio.sleep(60*60) # task runs every 60 min	
 		
 @bot.event
 async def on_ready():
 	global agendalist
+	global token
+	token = alist_tkn()
 	if not os.stat(AGENDA).st_size == 0:
 		f = open(AGENDA,"r")
 		agendalist = json.load(f, object_hook=object_hook_handler)
