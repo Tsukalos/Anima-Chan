@@ -106,8 +106,8 @@ async def agendaloop():
 			for x in agendalist:
 				if int(time.time()) > (x.airtime-(60*10)) and int(time.time()) < x.airtime:
 					await bot.send_message(channel, "Anime "+str(x.name)+" around "+str(datetime.fromtimestamp(x.airtime)))
-					agendalist.remove(x)
-					bot.send_message(channel, "ASDASDASD")
+					#agendalist.remove(x)
+					#bot.send_message(channel, "")
 					
 
 		
