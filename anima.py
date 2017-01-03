@@ -125,12 +125,17 @@ async def update_list():
 		if not agendalist == []:
 			for x in agendalist:
 				if int(time.time()) > (x.airtime):
-					x = create_slot_fromid(x.id)
-					logging.info("updating "+x.name)
+					a = create_slot_fromid(x.id)
+					if type(a) == AnimeSlot:
+						x = a
+						logging.info("updating "+x.name)
+					else:
+						if a == "finished":
+							logging.info(x.name+" has finished airing!")
 			save_agenda()
 		await asyncio.sleep(60*60) # task runs every 60 min	
 		
-@bot.event 
+@bot.event
 async def on_ready():
 	global agendalist
 	if not os.stat(AGENDA).st_size == 0:
