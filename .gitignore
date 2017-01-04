@@ -90,5 +90,6 @@ ENV/
 
 #authentication file from project
 auth.json
+
 #agenda file from from project
 agenda.json
