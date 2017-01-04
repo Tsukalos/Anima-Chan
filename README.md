@@ -18,9 +18,9 @@ First make a file called `auth.json` which should be like
 
 Next you'll need to get these tokens from (need accounts, if you don't have one already):
 
-'discord_token': https://discordapp.com/developers/docs/intro
+'discord_token' : https://discordapp.com/developers/docs/intro
 
-'anilist_client_id' and 'anilist_client_secret': https://anilist.co/settings/developer
+'anilist_client_id' and 'anilist_client_secret' : https://anilist.co/settings/developer
 
 ##To-do
 

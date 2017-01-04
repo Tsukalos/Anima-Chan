@@ -128,7 +128,7 @@ async def agendaloop():
 		
 
 					
-		await asyncio.sleep(60*1) # task runs every 10 min
+		await asyncio.sleep(60*10) # task runs every 10 min
 
 
 
