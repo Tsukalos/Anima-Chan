@@ -78,9 +78,8 @@ agendalist = []
 def create_slot_fromid(id):
 	r = requests.get('https://anilist.co/api/anime/'+id+'?access_token='+token)
 	c = json.loads(bytes.decode(r.content))
-	if c['airing'] == None:
-		if c['airing_status'] == 'finished airing':
-			return "finished"
+	if c['airing_status'] == 'finished airing':
+		return "finished"
 	else:
 		id = c['id']
 		nromaji = c['title_romaji']
@@ -118,6 +117,7 @@ async def agendaloop():
 	channel = discord.Object(id='265313634521972736')
 	
 	while not bot.is_closed: #things to be looped go here
+		logging.info(agendalist)
 		if not agendalist == []:
 			for x in agendalist:
 				if int(time.time()) > (x.airtime-(60*10)) and int(time.time()) < x.airtime:
@@ -128,7 +128,7 @@ async def agendaloop():
 		
 
 					
-		await asyncio.sleep(60*10) # task runs every 10 min
+		await asyncio.sleep(60*1) # task runs every 10 min
 
 
 
@@ -175,11 +175,18 @@ async def addanime(name : str):
 	"""
 		Adds a anime to the agenda
 		Use Anilist.co url to add
+		
+		Use: !!addanime anilist.co/anime/<..>/<..>
 	"""
 	global agendalist
-	path = os.path.split(urlparse(name).path)
-	path = os.path.split(path[0])
-	id = path[1]
+	scheme = urlparse(name).scheme
+	if scheme == '':
+		name = 'https://'+name
+	logging.info(name)
+	path = urlparse(name).path
+	logging.info(path)
+	id = path[7:11]+path[11]
+	
 	##need exceptions
 	aslot = create_slot_fromid(id)
 	if  type(aslot) == AnimeSlot:
@@ -196,7 +203,7 @@ async def seeagenda():
 	await bot.say("Animes in the agenda:")
 	text = ""
 	for a in agendalist:
-		text = text + "https://anilist.co/anime/"+str(a.id)+"	**"+a.name+"** \n"
+		text = text + "https://anilist.co/anime/"+str(a.id)+"/	**"+a.name+"** \n"
 	await bot.say(text)
 
 	
