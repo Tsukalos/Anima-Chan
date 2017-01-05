@@ -200,13 +200,46 @@ async def addanime(name : str):
 	
 @bot.command()
 async def seeagenda():
-	await bot.say("Animes in the agenda:")
-	text = ""
-	for a in agendalist:
-		text = text + "https://anilist.co/anime/"+str(a.id)+"/	**"+a.name+"** \n"
-	await bot.say(text)
+	if not agendalist == []:
+		await bot.say("Animes in the agenda:")
+		text = ""
+		for a in agendalist:
+			text = text + "https://anilist.co/anime/"+str(a.id)+"/	**"+a.name+"** \n"
+		await bot.say(text)
+	else:
+		await bot.say("The agenda is empty :confounded:")
 
 	
+def check_number(msg):
+		return msg.content.isdigit()
+
+@bot.command(pass_context = True)
+async def removeanime(ctx, member: discord.Member = None):
+	'''
+		Removes anime from the list
+	'''
+	if member is None:
+		author = ctx.message.author
+	await bot.say("Animes in the agenda:")
+	text = ""
+	i = 0
+	for a in agendalist:
+		i = i + 1
+		text = text + "[  "+str(i)+"  ]		**"+a.name+"** \n"
+	text = text + "\n Type the number of the anime you wish to remove."
+	await bot.say(text)
+	num = await bot.wait_for_message(timeout=10.0, author=author, check=check_number)
+	while int(num.content) <= 0 or int(num.content) > i:
+		await bot.say("Please choose one of the numbers above.")
+		num = await bot.wait_for_message(timeout=10.0, author=author, check=check_number)
+	
+	x = agendalist[int(num.content)-1]
+	agendalist.remove(x)
+	save_agenda()
+	await bot.say(x.name+" removed from the agenda!")
+	
+	
+
 @bot.command()
 async def killbot():
 	exit()
