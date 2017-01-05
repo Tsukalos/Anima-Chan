@@ -22,6 +22,15 @@ Next you'll need to get these tokens from (need accounts, if you don't have one 
 
 `anilist_client_id` and `anilist_client_secret`  https://anilist.co/settings/developer
 
+##Commands
+
+Command prefix is '!!' (you can change this)
+
+**addanime** Adds a anime to the agenda. Use Anilist.co url
+
+`!!addanime anilist.co/anime/<..>/<..>`
+
+
 ##To-do
 
 * Need exceptions, lot's of 'em
