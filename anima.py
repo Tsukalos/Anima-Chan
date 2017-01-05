@@ -187,15 +187,21 @@ async def addanime(name : str):
 	logging.info(path)
 	id = path[7:11]+path[11]
 	
-	##need exceptions
-	aslot = create_slot_fromid(id)
-	if  type(aslot) == AnimeSlot:
-		agendalist.append(aslot)
-		save_agenda()
-		await bot.say(aslot.name+" set to the agenda!")
-	else:
-		if aslot == "finished":
-			await bot.say("This show has already finished airing :cry:")
+	flag = True
+	for a in agendalist:
+		if a.id == int(id):
+			await bot.say("The show "+a.name+" already in the agenda!")
+			flag = False
+			break
+	if flag:
+		aslot = create_slot_fromid(id)
+		if  type(aslot) == AnimeSlot:
+			agendalist.append(aslot)
+			save_agenda()
+			await bot.say(aslot.name+" set to the agenda!")
+		else:
+			if aslot == "finished":
+				await bot.say("This show has already finished airing :cry:")
 	
 	
 @bot.command()
