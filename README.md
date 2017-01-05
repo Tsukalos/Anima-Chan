@@ -26,9 +26,7 @@ Next you'll need to get these tokens from (need accounts, if you don't have one 
 
 Command prefix is '!!' (you can change this)
 
-**addanime** - Adds a anime to the agenda. Use Anilist.co url
-
-`!!addanime anilist.co/anime/<..>/<..>`
+**addanime** - Adds a anime to the agenda. Use Anilist.co url `!!addanime anilist.co/anime/<..>/<..>`
 
 **seeagenda** - See which shows are in the agenda
 
