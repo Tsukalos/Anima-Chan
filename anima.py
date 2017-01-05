@@ -73,7 +73,16 @@ def alist_tkn():
 
 agendalist = []
 
-
+def validate_url(url):
+	try:
+		r = requests.get(url)
+	except:
+		return False
+	path = urlparse(url).path
+	if path.startswith('/anime/'):
+		return True
+	else:
+		return False
 
 def create_slot_fromid(id):
 	r = requests.get('https://anilist.co/api/anime/'+id+'?access_token='+token)
@@ -100,8 +109,6 @@ class AnimeSlot:
 def object_hook_handler(dct):
     """ parsed_dict argument will get 
         json object as a dictionary
-        for above example it would have
-        following dictionary as value
     """
     return AnimeSlot(id=dct['id'], name=dct['name'], airtime=dct['airtime'], nextep=dct['nextep'])
 
@@ -114,42 +121,44 @@ def save_agenda():
 
 async def agendaloop():
 	await bot.wait_until_ready()
-	channel = discord.Object(id='265313634521972736')
-	
+	channel = discord.Object(id='168153505310179330')
 	while not bot.is_closed: #things to be looped go here
 		logging.info(agendalist)
-		if not agendalist == []:
+		logging.info(time.time())
+		if agendalist:
+			logging.info(time.time())
 			for x in agendalist:
-				if int(time.time()) > (x.airtime-(60*10)) and int(time.time()) < x.airtime:
-					await bot.send_message(channel, "Anime "+str(x.name)+" around "+str(datetime.fromtimestamp(x.airtime)))
+				if int(time.time()) > (x.airtime-(60*15)) and int(time.time()) < x.airtime:
+					await bot.send_message(channel, "Anime **"+str(x.name)+"** around **"+str(datetime.fromtimestamp(x.airtime))+"**")
 					
 				
 
 		
 
 					
-		await asyncio.sleep(60*10) # task runs every 10 min
-
-
-
-
+		await asyncio.sleep(60*5) # task runs every 10 min
+		
+	
 async def update_list():
 	await bot.wait_until_ready()
 	global agendalist
 	while not bot.is_closed:
-		if not agendalist == []:
+		logging.info(int(time.time()))
+		if agendalist:
+			logging.info(int(time.time()))
 			for x in agendalist:
 				if int(time.time()) > (x.airtime):
-					a = create_slot_fromid(x.id)
+					a = create_slot_fromid(str(x.id))
 					if type(a) == AnimeSlot:
-						x = a
+						agendalist.pop(agendalist.index(x))
+						agendalist.insert(0, a)
 						logging.info("updating "+x.name)
 					else:
 						if a == "finished":
 							logging.info(x.name+" has finished airing!")
 							agendalist.remove(x)
 			save_agenda()
-		await asyncio.sleep(60*60) # task runs every 60 min	
+		await asyncio.sleep(60*20) # task runs every 60 min	
 		
 @bot.event
 async def on_ready():
@@ -179,29 +188,38 @@ async def addanime(name : str):
 		Use: !!addanime anilist.co/anime/<..>/<..>
 	"""
 	global agendalist
+	
 	scheme = urlparse(name).scheme
 	if scheme == '':
 		name = 'https://'+name
-	logging.info(name)
-	path = urlparse(name).path
-	logging.info(path)
-	id = path[7:11]+path[11]
-	
-	flag = True
-	for a in agendalist:
-		if a.id == int(id):
-			await bot.say("The show "+a.name+" already in the agenda!")
-			flag = False
-			break
-	if flag:
-		aslot = create_slot_fromid(id)
-		if  type(aslot) == AnimeSlot:
-			agendalist.append(aslot)
-			save_agenda()
-			await bot.say(aslot.name+" set to the agenda!")
+		
+	netloc = urlparse(name).netloc
+	if not netloc == 'anilist.co':
+		await bot.say("Please use a anilist.co valid anime url!")
+	else:
+		if validate_url(name):
+			logging.info(name)
+			path = urlparse(name).path
+			logging.info(path)
+			id = path[7:11]+path[11]
+			
+			flag = True
+			for a in agendalist:
+				if a.id == int(id):
+					await bot.say("The show **"+a.name+"** already in the agenda!")
+					flag = False
+					break
+			if flag:
+				aslot = create_slot_fromid(id)
+				if  type(aslot) == AnimeSlot:
+					agendalist.append(aslot)
+					save_agenda()
+					await bot.say("**"+aslot.name+"** set to the agenda!")
+				else:
+					if aslot == "finished":
+						await bot.say("This show has already finished airing :cry:")
 		else:
-			if aslot == "finished":
-				await bot.say("This show has already finished airing :cry:")
+			await bot.say("This is not a valid url! :cry:")
 	
 	
 @bot.command()
@@ -250,5 +268,8 @@ async def removeanime(ctx, member: discord.Member = None):
 async def killbot():
 	exit()
 
+bot.loop.create_task(update_list())
+	
 bot.loop.create_task(agendaloop())
+
 bot.run(discord_tkn)
