@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.INFO)
 
 AGENDA = "agenda.json"
 AUTH = "auth.json"
+CONFIG = "config.json"
 
 #creates file if doesn't exist
 if not os.path.isfile(AGENDA):
@@ -31,6 +32,9 @@ if not os.path.isfile(AGENDA):
 	f.close()
 if not os.path.isfile(AUTH):
 	f = open(AUTH,"x")
+	f.close()
+if not os.path.isfile(CONFIG):
+	f = open(CONFIG, "x")
 	f.close()
 
 	
@@ -44,10 +48,24 @@ token = ''
 
 description = 'AnimeAirTime'
 
+channel = discord.Object(id='')
 
 CMDPREFIX = '!!'
 
 bot = commands.Bot(command_prefix=CMDPREFIX, description=description)
+
+def get_pref_config():
+	global channel
+	global CMDPREFIX
+	f = open(CONFIG, "r")
+	c = json.load(f)
+	channel = discord.Object(id=str(c['discord_channel_id']))
+	CMDPREFIX = str(c['command_prefix'])
+	logging.info('Loaded config.json')
+	f.close()
+	
+get_pref_config()
+	
 
 def get_credentials_from_file():
 	global discord_tkn
@@ -58,6 +76,7 @@ def get_credentials_from_file():
 	discord_tkn = str(c['discord_token'])
 	client_id = str(c['anilist_client_id'])
 	client_secret = str(c['anilist_client_secret'])
+	logging.info('Loaded auth.json')
 	f.close()
 	
 get_credentials_from_file()
@@ -122,7 +141,6 @@ def save_agenda():
 
 async def agendaloop():
 	await bot.wait_until_ready()
-	channel = discord.Object(id='169834335321587712')
 	while not bot.is_closed: #things to be looped go here
 		if agendalist:
 			for x in agendalist:

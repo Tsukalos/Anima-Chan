@@ -93,3 +93,6 @@ auth.json
 
 #agenda file from from project
 agenda.json
+
+#config file from project 
+config.json
