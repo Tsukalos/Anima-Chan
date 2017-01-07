@@ -32,7 +32,7 @@ Next, make other file called `config.json` which should be like
 ```
 The first is the channel ID where the bot will announce the airtimes.
 
-The second is your prefrred command prefix.
+The second is your preferred command prefix.
 
 
 ##Commands
