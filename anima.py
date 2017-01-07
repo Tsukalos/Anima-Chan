@@ -58,6 +58,7 @@ def get_credentials_from_file():
 	discord_tkn = str(c['discord_token'])
 	client_id = str(c['anilist_client_id'])
 	client_secret = str(c['anilist_client_secret'])
+	f.close()
 	
 get_credentials_from_file()
 
@@ -121,42 +122,41 @@ def save_agenda():
 
 async def agendaloop():
 	await bot.wait_until_ready()
-	channel = discord.Object(id='168153505310179330')
+	channel = discord.Object(id='169834335321587712')
 	while not bot.is_closed: #things to be looped go here
-		logging.info(agendalist)
-		logging.info(time.time())
 		if agendalist:
-			logging.info(time.time())
 			for x in agendalist:
 				if int(time.time()) > (x.airtime-(60*15)) and int(time.time()) < x.airtime:
-					await bot.send_message(channel, "Anime **"+str(x.name)+"** around **"+str(datetime.fromtimestamp(x.airtime))+"**")
+					dt = datetime.fromtimestamp(x.airtime)
+					await bot.send_message(channel, "Anime **"+str(x.name)+"** around **"+dt.strftime('%d/%m/%y  %H:%M')+"**")
 					
 				
 
 		
 
 					
-		await asyncio.sleep(60*5) # task runs every 10 min
-		
+		await asyncio.sleep(60*10) # task runs every 10 min
+
 	
 async def update_list():
 	await bot.wait_until_ready()
 	global agendalist
 	while not bot.is_closed:
-		logging.info(int(time.time()))
 		if agendalist:
-			logging.info(int(time.time()))
+			auxagenda = agendalist
 			for x in agendalist:
 				if int(time.time()) > (x.airtime):
 					a = create_slot_fromid(str(x.id))
 					if type(a) == AnimeSlot:
-						agendalist.pop(agendalist.index(x))
-						agendalist.insert(0, a)
-						logging.info("updating "+x.name)
+						i = agendalist.index(x)
+						auxagenda.pop(i)
+						auxagenda.insert(i, a)
+						logging.info("Updating "+x.name)
 					else:
 						if a == "finished":
 							logging.info(x.name+" has finished airing!")
-							agendalist.remove(x)
+							auxagenda.remove(x)
+			agendalist = auxagenda
 			save_agenda()
 		await asyncio.sleep(60*20) # task runs every 60 min	
 		
@@ -228,7 +228,8 @@ async def seeagenda():
 		await bot.say("Animes in the agenda:")
 		text = ""
 		for a in agendalist:
-			text = text + "https://anilist.co/anime/"+str(a.id)+"/	**"+a.name+"** \n"
+			fstrtime = datetime.fromtimestamp(a.airtime).strftime('%d/%m/%y  %H:%M')
+			text = text + "https://anilist.co/anime/"+str(a.id)+"/ (__"+fstrtime+"__)	**"+a.name+"** \n"
 		await bot.say(text)
 	else:
 		await bot.say("The agenda is empty :confounded:")
