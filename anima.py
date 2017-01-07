@@ -137,27 +137,31 @@ async def agendaloop():
 					
 		await asyncio.sleep(60*10) # task runs every 10 min
 
+def update_list():
+	global agendalist
+	if agendalist:
+		auxagenda = agendalist
+		for x in agendalist:
+			if int(time.time()) > (x.airtime):
+				a = create_slot_fromid(str(x.id))
+				if type(a) == AnimeSlot:
+					i = agendalist.index(x)
+					auxagenda.pop(i)
+					auxagenda.insert(i, a)
+					logging.info("Updating "+x.name)
+				else:
+					if a == "finished":
+						logging.info(x.name+" has finished airing!")
+						auxagenda.remove(x)
+		agendalist = auxagenda
+		save_agenda()
 	
-async def update_list():
+
+async def auto_update_list():
 	await bot.wait_until_ready()
 	global agendalist
 	while not bot.is_closed:
-		if agendalist:
-			auxagenda = agendalist
-			for x in agendalist:
-				if int(time.time()) > (x.airtime):
-					a = create_slot_fromid(str(x.id))
-					if type(a) == AnimeSlot:
-						i = agendalist.index(x)
-						auxagenda.pop(i)
-						auxagenda.insert(i, a)
-						logging.info("Updating "+x.name)
-					else:
-						if a == "finished":
-							logging.info(x.name+" has finished airing!")
-							auxagenda.remove(x)
-			agendalist = auxagenda
-			save_agenda()
+		update_list()
 		await asyncio.sleep(60*20) # task runs every 60 min	
 		
 @bot.event
@@ -224,6 +228,7 @@ async def addanime(name : str):
 	
 @bot.command()
 async def seeagenda():
+	update_list()
 	if not agendalist == []:
 		await bot.say("Animes in the agenda:")
 		text = ""
@@ -269,7 +274,7 @@ async def removeanime(ctx, member: discord.Member = None):
 async def killbot():
 	exit()
 
-bot.loop.create_task(update_list())
+bot.loop.create_task(auto_update_list())
 	
 bot.loop.create_task(agendaloop())
 

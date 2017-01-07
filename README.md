@@ -37,5 +37,5 @@ Command prefix is '!!' (you can change this)
 
 ##To-do
 
-* Need exceptions, lot's of 'em
-* ?
+* Need exceptions
+* Better logging
