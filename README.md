@@ -22,9 +22,21 @@ Next you'll need to get these tokens from (need accounts, if you don't have one 
 
 `anilist_client_id` and `anilist_client_secret`  https://anilist.co/settings/developer
 
+
+Next, make other file called `config.json` which should be like
+```
+{
+	"discord_channel_id": "",
+	"command_prefix": ""
+}
+```
+The first is the channel ID where the bot will announce the airtimes.
+
+The second is your preferred command prefix.
+
+
 ##Commands
 
-Command prefix is '!!' (you can change this)
 
 **addanime** - Adds a anime to the agenda. Use Anilist.co url. 	`!!addanime anilist.co/anime/<..>/<..>`
 
