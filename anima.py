@@ -1,5 +1,5 @@
 '''
-Anima-Chan ver. 0.2
+Anima-Chan ver. 0.5
 /u/Pedrowski
 used solutions: 
 http://www.yilmazhuseyin.com/blog/dev/advanced_json_manipulation_with_python/
@@ -201,8 +201,13 @@ async def on_ready():
 	print(token)
 	print('----------------')
 
-@bot.command()
-async def addanime(name : str):
+@bot.group(pass_context=True)
+async def agenda(ctx):
+	if ctx.invoked_subcommand is None:
+		await bot.say('Invalid anime command!')
+
+@agenda.command()
+async def add(name : str):
 	"""
 		Adds a anime to the agenda
 		Use Anilist.co url to add
@@ -244,15 +249,15 @@ async def addanime(name : str):
 			await bot.say("This is not a valid url! :cry:")
 	
 	
-@bot.command()
-async def seeagenda():
+@agenda.command()
+async def see():
 	update_list()
 	if not agendalist == []:
 		await bot.say("Animes in the agenda:")
 		text = ""
 		for a in agendalist:
 			fstrtime = datetime.fromtimestamp(a.airtime).strftime('%d/%m/%y  %H:%M')
-			text = text + "https://anilist.co/anime/"+str(a.id)+"/ (__"+fstrtime+"__)	**"+a.name+"** \n"
+			text = text + "https://anilist.co/anime/"+str(a.id)+"/	 EP"+str(a.nextep)+"  (__"+fstrtime+"__)	**"+a.name+"** \n"
 		await bot.say(text)
 	else:
 		await bot.say("The agenda is empty :confounded:")
@@ -261,8 +266,8 @@ async def seeagenda():
 def check_number(msg):
 		return msg.content.isdigit()
 
-@bot.command(pass_context = True)
-async def removeanime(ctx, member: discord.Member = None):
+@agenda.command(pass_context = True)
+async def remove(ctx, member: discord.Member = None):
 	'''
 		Removes anime from the list
 	'''
@@ -280,14 +285,23 @@ async def removeanime(ctx, member: discord.Member = None):
 	while int(num.content) <= 0 or int(num.content) > i:
 		await bot.say("Please choose one of the numbers above.")
 		num = await bot.wait_for_message(timeout=10.0, author=author, check=check_number)
+		if num == None:
+			break
 	
-	x = agendalist[int(num.content)-1]
-	agendalist.remove(x)
-	save_agenda()
-	await bot.say(x.name+" removed from the agenda!")
+	if not num == None:
+		x = agendalist[int(num.content)-1]
+		agendalist.remove(x)
+		save_agenda()
+		await bot.say(x.name+" removed from the agenda!")
 	
+@bot.event
+async def on_message(m):
+	if m.content.startswith("!!"):
+		msub = m.content[2:]
+		t = "[COMMAND]"+m.author.name+"("+m.author.id+") - "+msub
+		logging.info(t)
+	await bot.process_commands(m)
 	
-
 @bot.command()
 async def killbot():
 	exit()
