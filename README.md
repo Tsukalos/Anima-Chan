@@ -38,7 +38,7 @@ The second is your preferred command prefix.
 ##Commands
 
 
-**agenda add** - Adds a anime to the agenda. Use Anilist.co url. 	`!!addanime anilist.co/anime/<..>/<..>`
+**agenda add** - Adds a anime to the agenda. Use Anilist.co url. 	`!!agenda add anilist.co/anime/<..>/<..>`
 
 **agenda see** - See which shows are in the agenda
 
