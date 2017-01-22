@@ -22,6 +22,8 @@ from urllib.parse import urlparse
 #basic logging config,simple consele view
 logging.basicConfig(level=logging.INFO)
 
+
+#json files
 AGENDA = "agenda.json"
 AUTH = "auth.json"
 CONFIG = "config.json"
@@ -46,14 +48,19 @@ client_secret = ''
 ## used after anilist auth
 token = ''
 
+#bot description 
 description = 'AnimeAirTime'
 
+#default announce channel, defined in config.json
 channel = discord.Object(id='')
 
+#default command prefix
 CMDPREFIX = '!!'
 
+#Discord.Client define, from ext.commands
 bot = commands.Bot(command_prefix=CMDPREFIX, description=description)
 
+#retrieves information from config.json
 def get_pref_config():
 	global channel
 	global CMDPREFIX
@@ -66,7 +73,7 @@ def get_pref_config():
 	
 get_pref_config()
 	
-
+#retrieves authentication from auth file
 def get_credentials_from_file():
 	global discord_tkn
 	global client_id
@@ -84,15 +91,17 @@ get_credentials_from_file()
 #header data for anilist auth
 auth_data = {'grant_type': 'client_credentials', 'client_id' : client_id , 'client_secret' : client_secret }
 	
+#gets access_token for anilist api use.
 def alist_tkn():
 	''' Auth Anilist API - returns access_token str '''
 	client_auth = requests.post('https://anilist.co/api/auth/access_token',data=auth_data)
 	json_res = json.loads(bytes.decode(client_auth.content))
 	return json_res['access_token']
 
-
+#global agenda
 agendalist = []
 
+#checks if url is a valid anilist.co url
 def validate_url(url):
 	try:
 		r = requests.get(url)
@@ -104,6 +113,8 @@ def validate_url(url):
 	else:
 		return False
 
+# using id parameter from anilist, creates a AnimeSlot object,
+# if show is not airing, or id is invalid, returns a str.
 def create_slot_fromid(id):
 	r = requests.get('https://anilist.co/api/anime/'+id+'?access_token='+token)
 	c = json.loads(bytes.decode(r.content))
@@ -125,20 +136,22 @@ class AnimeSlot:
 		self.name = name
 		self.airtime = airtime
 		self.nextep = nextep
-		
+
+#gets a dict object and transforms into AnimeSlot object.		
 def object_hook_handler(dct):
     """ parsed_dict argument will get 
         json object as a dictionary
     """
     return AnimeSlot(id=dct['id'], name=dct['name'], airtime=dct['airtime'], nextep=dct['nextep'])
 
+#writes agendalist into a json file.
 def save_agenda():
 	f = open(AGENDA,"w")
 	f.write(json.dumps([a.__dict__ for a in agendalist], sort_keys=True , indent=4))
 	f.close()
 
 
-
+#async loop that checks if AnimeSlot anime is airing in X minutes.
 async def agendaloop():
 	await bot.wait_until_ready()
 	while not bot.is_closed: #things to be looped go here
@@ -155,6 +168,7 @@ async def agendaloop():
 					
 		await asyncio.sleep(60*10) # task runs every 10 min
 
+#checks if AnimeSlot anime in agendalist is outdated.
 def update_list():
 	global agendalist
 	if agendalist:
@@ -201,18 +215,20 @@ async def on_ready():
 	print(token)
 	print('----------------')
 
+#agenda group of commands.
 @bot.group(pass_context=True)
 async def agenda(ctx):
 	if ctx.invoked_subcommand is None:
-		await bot.say('Invalid anime command!')
+		await bot.say('Invalid agenda command!')
 
+	
 @agenda.command()
 async def add(name : str):
 	"""
 		Adds a anime to the agenda
 		Use Anilist.co url to add
 		
-		Use: !!addanime anilist.co/anime/<..>/<..>
+		Use: !!agenda add anilist.co/anime/<..>/<..>
 	"""
 	global agendalist
 	
@@ -251,6 +267,9 @@ async def add(name : str):
 	
 @agenda.command()
 async def see():
+	'''
+		Displays Animes in the agenda
+	'''
 	update_list()
 	if not agendalist == []:
 		await bot.say("Animes in the agenda:")
@@ -293,7 +312,8 @@ async def remove(ctx, member: discord.Member = None):
 		agendalist.remove(x)
 		save_agenda()
 		await bot.say(x.name+" removed from the agenda!")
-	
+
+#logs to console commands inputs
 @bot.event
 async def on_message(m):
 	if m.content.startswith("!!"):
