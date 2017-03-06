@@ -160,12 +160,7 @@ async def agendaloop():
 				if int(time.time()) > (x.airtime-(60*15)) and int(time.time()) < x.airtime:
 					dt = datetime.fromtimestamp(x.airtime)
 					await bot.send_message(channel, "Anime **"+str(x.name)+"** around **"+dt.strftime('%d/%m/%y  %H:%M')+"**")
-					
-				
-
-		
-
-					
+							
 		await asyncio.sleep(60*10) # task runs every 10 min
 
 #checks if AnimeSlot anime in agendalist is outdated.
